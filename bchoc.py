@@ -1,9 +1,13 @@
+#!/usr/bin/env python3
+import os
 import sys
 import datetime as dt
 import temporenc # pip install temporenc
 from os.path import exists
 import hashlib
 import uuid
+
+file_path = os.getenv('BCHOC_FILE_PATH') #
 
 class Block:
     previous_hash = b""
