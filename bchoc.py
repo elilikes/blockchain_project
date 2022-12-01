@@ -6,10 +6,9 @@ import struct
 from os.path import exists
 import hashlib
 
-
 file_path = os.getenv('BCHOC_FILE_PATH') 
-#file_path = 'blockchain'
 
+#Block class that represents blocks and their fields, also contains initial states for initializing...
 class Block:
     previous_hash = b""
     timestamp = b""
@@ -59,6 +58,8 @@ class Block:
     def initData(self):
         return(b'Initial block\0')
  
+#Creates the initial block
+#returns a block
 def create_init_block():
     temp_block = Block()
     temp_block.previous_hash = temp_block.initPrev()
@@ -69,20 +70,25 @@ def create_init_block():
     temp_block.data_length = temp_block.initDataLength()
     temp_block.data = temp_block.initData()
     return temp_block
-      
+
+#initializes chain      
 def init_chain():
     with open(file_path, 'wb') as f:
         first = create_init_block()
         init_bytestr = block_to_bytes(first)
         f.write(init_bytestr)
         f.close()
-          
+        
+#Hashes a block as a parameter
+#returns a byte string          
 def hash_block(block : Block):
     bytes_of_block = block_to_bytes(block)
     h1 = hashlib.sha256()
     h1.update(bytes_of_block)
     return h1.digest()
 
+#takes a block as input
+#returns bytes
 def block_to_bytes(block : Block):
     bs = b''
     bs = bs + block.previous_hash
@@ -94,6 +100,8 @@ def block_to_bytes(block : Block):
     bs = bs + block.data
     return bs
 
+#takes two blocks as input and compares equality
+#returns boolean
 def block_equals(b1 : Block, b2 : Block):
     if (b1.previous_hash == b2.previous_hash):
                 if (b1.state.decode() == b2.state.decode()):
@@ -102,6 +110,8 @@ def block_equals(b1 : Block, b2 : Block):
                             return True
     return False    
 
+#reads the blockchain file
+#returns an array of block objects representing the chain
 def readBlockchain():
     blockchain = []
     with open(file_path, 'rb') as f:  
@@ -123,6 +133,7 @@ def readBlockchain():
         entry_length = entry_length + 76 + data_int_val
     return blockchain                            
 
+#takes block as parameter, converts to bytestring and appends to file
 def write_block_to_chain(block: Block):
     blockstring = block_to_bytes(block) 
     with open(file_path, 'rb') as f:
@@ -132,6 +143,7 @@ def write_block_to_chain(block: Block):
         f.write(chain_bytes + blockstring)
         f.close()    
 
+#print function for adding
 def print_add(block: Block):
     ba = block.case_ID[::-1]
     casestring = ba.hex()
@@ -143,6 +155,7 @@ def print_add(block: Block):
     print('\tStatus: ' + block.state.decode('utf-8'))
     print('\tTime of action: ' + asd + 'Z')
 
+#print function for checkout
 def print_checkout(block: Block):
     ba = block.case_ID[::-1]
     casestring = ba.hex()
@@ -154,6 +167,7 @@ def print_checkout(block: Block):
     print('\tStatus: ' + block.state.decode('utf-8'))
     print('\tTime of action: ' + asd + 'Z')
 
+#print function for checkin
 def print_checkin(block: Block):
     ba = block.case_ID[::-1]
     casestring = ba.hex()
@@ -164,7 +178,8 @@ def print_checkin(block: Block):
     print('Checked in item: ' + str(item_id))
     print('\tStatus: ' + block.state.decode('utf-8'))
     print('\tTime of action: ' + asd + 'Z')
-    
+
+#print function for checkin   
 def print_remove(block: Block):
     ba = block.case_ID[::-1]
     casestring = ba.hex()
@@ -176,7 +191,8 @@ def print_remove(block: Block):
     print('\tStatus: ' + block.state.decode('utf-8'))
     print('\tOwner info: ' + block.data.decode('utf-8'))
     print('\tTime of action: ' + asd + 'Z')
-    
+ 
+#print function for checkin    
 def print_log(block: Block):
     ba = block.case_ID[::-1]
     casestring = ba.hex()
@@ -190,6 +206,7 @@ def print_log(block: Block):
     print('Time: ' + asd + 'Z')
     print()
 
+#print function for checkin
 def print_log_case_item(block : Block, case : str, item : int):
     ba = block.case_ID[::-1]
     casestring = ba.hex()
@@ -205,6 +222,7 @@ def print_log_case_item(block : Block, case : str, item : int):
             print('Time: ' + asd + 'Z')
             print()
 
+#print function for checkin
 def print_log_case(block : Block, case : str):
     ba = block.case_ID[::-1]
     casestring = ba.hex()
@@ -218,7 +236,8 @@ def print_log_case(block : Block, case : str):
         print('Action: ' + bs)
         print('Time: ' + asd + 'Z')
         print()
- 
+
+#print function for checkin 
 def print_log_item(block : Block, item : int):
     ba = block.case_ID[::-1]
     casestring = ba.hex()
@@ -233,7 +252,8 @@ def print_log_item(block : Block, item : int):
         print('Time: ' + asd + 'Z')
         print()
  
-    
+#creates a block from case id and item id
+#returns a block struct    
 def add_block(case_id, evidence_id):
     temp = Block()
     temp.timestamp = temp.getTimeStamp()
@@ -251,7 +271,8 @@ def add_block(case_id, evidence_id):
     temp.data_length = b'\x00' * 4
     temp.data = b''
     return temp
-      
+
+#parses command line and handles logic for bchoc init
 if sys.argv[1] == "init":
     if len(sys.argv) > 2:
         exit(50)
@@ -276,6 +297,7 @@ if sys.argv[1] == "init":
         init_chain()   
         print("Blockchain file not found. Created INITIAL block.")
 
+#parses command line and handles logic for bchoc add
 if sys.argv[1] == 'add':
     if exists(file_path) == False:
         init_chain()
@@ -299,6 +321,7 @@ if sys.argv[1] == 'add':
         print_add(temp)
         incr = incr + 2
 
+#parses command line and handles logic for bchoc checkout
 if sys.argv[1] == 'checkout':
     if sys.argv[2] != '-i':
         exit(43)
@@ -318,7 +341,8 @@ if sys.argv[1] == 'checkout':
             else:
                 exit(44)
     exit(45)
-              
+
+#parses command line and handles logic for bchoc checkin
 if sys.argv[1] == 'checkin':
     if sys.argv[2] != '-i':
         exit(46)
@@ -338,7 +362,8 @@ if sys.argv[1] == 'checkin':
             else:
                 exit(47)
     exit(48)                
-    
+
+#parses command line and handles logic for bchoc remove
 if sys.argv[1] == 'remove':
     if sys.argv[2] != '-i':
         exit(49)
@@ -372,7 +397,8 @@ if sys.argv[1] == 'remove':
             else:
                 exit(50)
     exit(51)
-       
+
+#parses command line and handles logic for bchoc log
 if sys.argv[1] == 'log':
     arg_len = len(sys.argv)
     i = 2
@@ -422,21 +448,23 @@ if sys.argv[1] == 'log':
     else:
         for i in chain:
             print_log(i)       
-        
+
+#parses command line and handles logic for bchoc verify
 if sys.argv[1] == 'verify':
     chain = readBlockchain()
-    
     temp_init = create_init_block()
-      
+    
+    #checking if initial block is not good  
     if block_equals(chain[0],temp_init) == False:
         exit(68)
     
-    
+    #checking if released with no owner   
     for i in chain:
         if i.state.decode('utf-8') == 'RELEASED\x00\x00\x00\x00':
             if len(i.data) < 1:
                 exit(70)
-       
+    
+    #checking for doing something on an already removed item   
     for k in range(len(chain)):
         checker = False
         if chain[k].state.decode() == 'RELEASED\x00\x00\x00\x00':
@@ -463,6 +491,7 @@ if sys.argv[1] == 'verify':
                     if chain[l].state.decode() == 'DESTROYED\x00\x00\x00':
                         exit(75)
     
+    #checking for ching in a checked in item
     for k in range(len(chain)):
         checker = False      
         if chain[k].state.decode() == 'CHECKEDIN\x00\x00\x00':
@@ -477,6 +506,7 @@ if sys.argv[1] == 'verify':
                     if chain[l].state.decode() == 'CHECKEDIN\x00\x00\x00':
                         exit(76)
 
+    #checking for checking out a checked out item
     for k in range(len(chain)):
         checker = False
         if chain[k].state.decode() == 'CHECKEDOUT\x00\x00':
@@ -490,13 +520,15 @@ if sys.argv[1] == 'verify':
                         break                    
                     if chain[l].state.decode() == 'CHECKEDOUT\x00\x00':
                         exit(77)
-                        
+    
+    #checking for duplicate parent                     
     for k in range(len(chain)):   
         parent_hash = chain[k].previous_hash
         for l in range(k+1,len(chain)):
             if chain[k].previous_hash == chain[l].previous_hash:
                 exit(78)
-
+    
+    #checking for correct hashing
     m = 2
     while m < len(chain):
         hashed_block = hash_block(chain[m])
